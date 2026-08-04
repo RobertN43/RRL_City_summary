@@ -11,7 +11,10 @@ WEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
 def get_city_summary(city):
     """Dohvaća kratki sažetak grada s Wikipedije."""
 
-    url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{city}"
+    # Wikipedia REST API očekuje underscore umjesto razmaka (npr. "New_York")
+    wiki_city = city.replace(" ", "_")
+
+    url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{wiki_city}"
 
     headers = {
         "User-Agent": "MojQAStudentProjekt/1.0 (kontakt_student@mojdomena.hr)"
@@ -96,13 +99,14 @@ def main():
             print(f"Greška: Grad '{city}' nije pronađen.")
             return
 
-        # Koristi službeni naziv grada za dohvat temperature
-        temperature = get_temperature(official_name, WEATHER_API_KEY)
+        # Koristi ORIGINALNI unos korisnika za dohvat temperature
+        temperature = get_temperature(city, WEATHER_API_KEY)
 
         if temperature is None:
-            print(f"Greška: Grad '{official_name}' nije pronađen.")
+            print(f"Greška: Grad '{city}' nije pronađen.")
             return
 
+        # Ali u finalnom dokumentu koristi službeni naziv s Wikipedije kao naslov
         filename = save_to_file(
             official_name,
             summary,
