@@ -1,29 +1,53 @@
-import os
 import requests
 
 # 1. Unos grada
 city_name = input("Unesite ime grada: ").strip()
 
-# 2. Wikipedia API URL
-wiki_url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{city_name}"
-
-# 3. Postavljamo User-Agent zaglavlje (Wikipedia ovo obavezno traži)
-headers = {"User-Agent": "MyQATestApp/1.0 (contact@example.com)"}
-
-# 4. Šaljemo zahtjev s dodanim zaglavljem
-response = requests.get(wiki_url, headers=headers)
-
-# 5. Provjeravamo status
-if response.status_code == 200:
-    data = response.json()
-    summary = data.get("extract")
-
-    print("\n--- SAŽETAK S WIKIPEDIJE ---")
-    print(summary)
-
-elif response.status_code == 404:
-    print(f"\nGreška: Grad '{city_name}' nije pronađen na Wikipediji.")
+if not city_name:
+    print("Greška: Niste unijeli ime grada!")
 else:
-    print(
-        f"\nDošlo je do greške pri dohvatu s Wikipedije (Status kod: {response.status_code})."
-    )
+    # Wikipedija Action API (puno stabilniji za specijalne znakove i dijakritiku)
+    wiki_url = "https://en.wikipedia.org/w/api.php"
+
+    params = {
+        "action": "query",
+        "format": "json",
+        "prop": "extracts",
+        "exintro": True,  # Uzmi samo uvodni sažetak
+        "explaintext": True,  # Čisti tekst bez HTML oznaka
+        "titles": city_name,
+        "redirects": 1,  # Automatski preusmjeri (npr. ako netko napiše munich)
+    }
+
+    headers = {
+        "User-Agent": "MojQAStudentProjekt/1.0 (kontakt_student@mojdomena.hr)"
+    }
+
+    response = requests.get(wiki_url, headers=headers, params=params)
+
+    if response.status_code == 200:
+        data = response.json()
+        pages = data.get("query", {}).get("pages", {})
+
+        # Wikipedia API vraća stranice unutar rječnika s ID-em stranice
+        page_id = list(pages.keys())[0]
+
+        # Ako je ID "-1", stranica ne postoji
+        if page_id != "-1":
+            page = pages[page_id]
+            title = page.get("title")
+            extract = page.get("extract")
+
+            if extract:
+                print(f"\n--- SAŽETAK ZA: {title} ---")
+                print(extract)
+            else:
+                print(
+                    f"\nGreška: Pronađena je stranica '{title}', ali nema sažetka."
+                )
+        else:
+            print(f"\nGreška: Grad '{city_name}' nije pronađen na Wikipediji.")
+    else:
+        print(
+            f"\nDošlo je do greške pri dohvatu s Wikipedije (Kod: {response.status_code})."
+        )
