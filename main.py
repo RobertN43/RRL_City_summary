@@ -50,7 +50,7 @@ else:
 
     # Ako nismo dobili sažetak s Wikipedije, nemamo što dalje pisati u datoteku
     if summary_text:
-        # --- B) DOHVAĆANJE VREMENSKE PROGNOZE ---
+        #  B) DOHVAĆANJE VREMENSKE PROGNOZE ---
         weather_url = "http://api.openweathermap.org/data/2.5/weather"
         weather_params = {
             "q": city_input,
