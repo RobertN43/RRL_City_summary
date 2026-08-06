@@ -3,15 +3,14 @@ import textwrap
 import requests
 from dotenv import load_dotenv
 
-# Učitavanje API ključa iz .env datoteke
+# Loading API key from .env file
 load_dotenv()
 WEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
 
-
+# Fetches summary for the user input / city
 def get_city_summary(city):
-    """Dohvaća kratki sažetak grada s Wikipedije."""
 
-    # Wikipedia REST API očekuje underscore umjesto razmaka (npr. "New_York")
+    # Wikipedia REST API  expects underscore instead of space for example: "New_York"
     wiki_city = city.replace(" ", "_")
 
     url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{wiki_city}"
@@ -33,7 +32,7 @@ def get_city_summary(city):
 
 
 def get_temperature(city, api_key):
-    """Dohvaća trenutnu temperaturu grada."""
+    """Fetches current temperature from the weather API."""
 
     url = "https://api.openweathermap.org/data/2.5/weather"
 
@@ -59,7 +58,7 @@ def get_temperature(city, api_key):
 
 
 def save_to_file(city, summary, temperature):
-    """Sprema podatke u tekstualnu datoteku."""
+    """Saves weather data and city summary to file."""
 
     filename = f"{city}.txt"
 
@@ -92,21 +91,21 @@ def main():
         return
 
     try:
-        # Dohvati podatke s Wikipedije
+        # Fetches data from wikipedia
         official_name, summary = get_city_summary(city)
 
         if summary is None:
             print(f"Greška: Grad '{city}' nije pronađen.")
             return
 
-        # Koristi ORIGINALNI unos korisnika za dohvat temperature
+        # Use ORIGINAL user input to fetch temperature
         temperature = get_temperature(city, WEATHER_API_KEY)
 
         if temperature is None:
             print(f"Greška: Grad '{city}' nije pronađen.")
             return
 
-        # Ali u finalnom dokumentu koristi službeni naziv s Wikipedije kao naslov
+        # But use the official Wikipedia title as the heading in the final document
         filename = save_to_file(
             official_name,
             summary,
